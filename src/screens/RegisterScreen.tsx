@@ -1,66 +1,204 @@
-import React from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { Button, Surface, TextInput } from 'react-native-paper';
+import CustomIcon from '../components/CustomIcon';
+import { icons } from '../utils/icons';
 
 const RegisterScreen = ({ navigation }) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) {
+      setEmailError('Email is required');
+      return false;
+    }
+    if (!emailRegex.test(email)) {
+      setEmailError('Invalid email format');
+      return false;
+    }
+    setEmailError('');
+    return true;
+  };
+
+  const validatePassword = () => {
+    if (password !== confirmPassword) {
+      setPasswordError('Passwords do not match');
+      return false;
+    }
+    if (password.length < 6) {
+      setPasswordError('Password must be at least 6 characters');
+      return false;
+    }
+    setPasswordError('');
+    return true;
+  };
+
+  const handleRegister = () => {
+    if (validateEmail(email) && validatePassword()) {
+      navigation.navigate('MainApp');
+    }
+  };
+
+  // Custom icon components
+  const EmailIcon = () => (
+    <CustomIcon
+      source={icons.mail}
+      size={20}
+    />
+  );
+
+  const PasswordIcon = () => (
+    <CustomIcon
+      source={icons.lock}
+      size={20}
+    />
+  );
+
+  const EyeIcon = ({ showPassword }) => (
+    <CustomIcon
+      source={showPassword ? icons.eyeSlash : icons.eye}
+      size={20}
+    />
+  );
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Register</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        keyboardType="email-address"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        secureTextEntry
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Confirm Password"
-        secureTextEntry
-      />
-      <TouchableOpacity 
-        style={styles.button}
-        onPress={() => navigation.navigate('MainApp')}
-      >
-        <Text style={styles.buttonText}>Register</Text>
-      </TouchableOpacity>
-    </View>
+    <Surface style={styles.surface}>
+      <View style={styles.container}>
+        <Text style={styles.title}>Create Account</Text>
+        
+        <TextInput
+          mode="outlined"
+          label="Email"
+          value={email}
+          onChangeText={text => {
+            setEmail(text);
+            if (emailError) validateEmail(text);
+          }}
+          error={!!emailError}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          style={styles.input}
+          left={<TextInput.Icon icon={() => <EmailIcon />} />}
+        />
+
+        <TextInput
+          mode="outlined"
+          label="Password"
+          value={password}
+          onChangeText={text => {
+            setPassword(text);
+            if (passwordError) validatePassword();
+          }}
+          secureTextEntry={!showPassword}
+          style={styles.input}
+          left={<TextInput.Icon icon={() => <PasswordIcon />} />}
+          right={
+            <TextInput.Icon
+              icon={() => <EyeIcon showPassword={showPassword} />}
+              onPress={() => setShowPassword(!showPassword)}
+            />
+          }
+        />
+
+        <TextInput
+          mode="outlined"
+          label="Confirm Password"
+          value={confirmPassword}
+          onChangeText={text => {
+            setConfirmPassword(text);
+            if (passwordError) validatePassword();
+          }}
+          secureTextEntry={!showConfirmPassword}
+          style={styles.input}
+          error={!!passwordError}
+          left={<TextInput.Icon icon={() => <PasswordIcon />} />}
+          right={
+            <TextInput.Icon
+              icon={() => <EyeIcon showPassword={showConfirmPassword} />}
+              onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+            />
+          }
+        />
+
+        {passwordError ? (
+          <Text style={styles.errorText}>{passwordError}</Text>
+        ) : null}
+
+        <Button
+          mode="contained"
+          onPress={handleRegister}
+          style={styles.registerButton}
+          labelStyle={styles.buttonLabel}
+          disabled={!email || !password || !confirmPassword}
+        >
+          Register
+        </Button>
+
+        <View style={styles.footer}>
+          <Button
+            mode="text"
+            onPress={() => navigation.navigate('Login')}
+            style={styles.linkButton}
+          >
+            Already have an account? Sign in
+          </Button>
+        </View>
+      </View>
+    </Surface>
   );
 };
 
 const styles = StyleSheet.create({
+  surface: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     padding: 20,
+    justifyContent: 'center',
   },
   title: {
-    fontSize: 24,
-    marginBottom: 20,
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginBottom: 30,
+    textAlign: 'center',
+    color: '#1a1a1a',
   },
   input: {
-    width: '100%',
-    height: 40,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    marginBottom: 15,
+    marginBottom: 16,
+    backgroundColor: '#fff',
   },
-  button: {
-    backgroundColor: '#007AFF',
-    padding: 15,
-    borderRadius: 8,
-    width: '100%',
+  errorText: {
+    color: '#dc2626',
+    marginBottom: 16,
+    marginTop: -8,
+    fontSize: 12,
+    paddingLeft: 12,
   },
-  buttonText: {
-    color: 'white',
-    textAlign: 'center',
+  registerButton: {
+    marginTop: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  buttonLabel: {
     fontSize: 16,
+    paddingVertical: 4,
   },
+  footer: {
+    marginTop: 24,
+    alignItems: 'center',
+  },
+  linkButton: {
+    marginTop: 8,
+  }
 });
 
 export default RegisterScreen;

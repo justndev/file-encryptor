@@ -1,61 +1,163 @@
-import React from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { Button, Surface, TextInput } from 'react-native-paper';
+import CustomIcon from '../components/CustomIcon';
+import { icons } from '../utils/icons';
+
 
 const LoginScreen = ({ navigation }) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [emailError, setEmailError] = useState('');
+
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) {
+      setEmailError('Email is required');
+      return false;
+    }
+    if (!emailRegex.test(email)) {
+      setEmailError('Invalid email format');
+      return false;
+    } 
+    setEmailError('');
+    return true;
+  };
+
+  const handleLogin = () => {
+    if (validateEmail(email) && password) {
+      navigation.navigate('MainApp');
+    }
+  };
+
+  // Custom left and right components for TextInput
+  const EmailIcon = () => 
+    <CustomIcon
+      source={icons.mail} // You'll need to add your icon
+      size={20}
+    />
+
+  const PasswordIcon = () => 
+    <CustomIcon
+      source={icons.lock} // You'll need to add your icon
+      size={20}
+    />
+  
+
+  const EyeIcon = () => 
+    <CustomIcon
+      source={showPassword ? 
+        icons.eyeSlash : 
+        icons.eye}
+      size={20}
+    />
+  
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        keyboardType="email-address"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        secureTextEntry
-      />
-      <TouchableOpacity 
-        style={styles.button}
-        onPress={() => navigation.navigate('MainApp')}
-      >
-        <Text style={styles.buttonText}>Login</Text>
-      </TouchableOpacity>
-    </View>
+    <Surface style={styles.surface}>
+      <View style={styles.container}>
+        <Text style={styles.title}>Welcome Back</Text>
+        
+        <TextInput
+          mode="outlined"
+          label="Email"
+          value={email}
+          onChangeText={text => {
+            setEmail(text);
+            if (emailError) validateEmail(text);
+          }}
+          error={!!emailError}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          style={styles.input}
+          left={<TextInput.Icon icon={() => <EmailIcon />} />}
+        />
+        
+        <TextInput
+          mode="outlined"
+          label="Password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry={!showPassword}
+          style={styles.input}
+          left={<TextInput.Icon icon={() => <PasswordIcon />} />}
+          right={
+            <TextInput.Icon 
+              icon={() => <EyeIcon />}
+              onPress={() => setShowPassword(!showPassword)}
+            />
+          }
+        />
+        
+        <Button
+          mode="contained"
+          onPress={handleLogin}
+          style={styles.loginButton}
+          labelStyle={styles.buttonLabel}
+          disabled={!email || !password}
+        >
+          Login
+        </Button>
+        
+        <View style={styles.footer}>
+          <Button
+            mode="text"
+            onPress={() => navigation.navigate('Register')}
+            style={styles.linkButton}
+          >
+            Don't have an account? Sign up
+          </Button>
+          <Button
+            mode="text"
+            onPress={() => navigation.navigate('ForgotPassword')}
+            style={styles.linkButton}
+          >
+            Forgot Password?
+          </Button>
+        </View>
+      </View>
+    </Surface>
   );
 };
 
 const styles = StyleSheet.create({
+  surface: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     padding: 20,
+    justifyContent: 'center',
   },
   title: {
-    fontSize: 24,
-    marginBottom: 20,
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginBottom: 30,
+    textAlign: 'center',
+    color: '#1a1a1a',
   },
   input: {
-    width: '100%',
-    height: 40,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    marginBottom: 15,
+    marginBottom: 16,
+    backgroundColor: '#fff',
   },
-  button: {
-    backgroundColor: '#007AFF',
-    padding: 15,
+  loginButton: {
+    marginTop: 16,
+    paddingVertical: 8,
     borderRadius: 8,
-    width: '100%',
   },
-  buttonText: {
-    color: 'white',
-    textAlign: 'center',
+  buttonLabel: {
     fontSize: 16,
+    paddingVertical: 4,
   },
+  footer: {
+    marginTop: 24,
+    alignItems: 'center',
+  },
+  linkButton: {
+    marginTop: 8,
+  }
 });
 
 export default LoginScreen;

@@ -1,0 +1,28 @@
+Encrypt Page:
+- (create key)
+- choose file
+- encrypt file
+- upload file
+
+Library Page:
+- show files
+- per file: 
+  - get
+  - decrypt
+  - delete
+  
+  
+UI Encrypt Page:
+- "choose file placeholder"
+- file icon, filename, size + Button "Encrypt"
+- feedback
+- Button "upload"
+- feedback
+- button clear
+
+UI Library Page:
+- File Card (filename, size)
+- Toast "Download & Decrypt"
+- On the top: Button "Edit" => Buttons "Cancel" "Delete"
+
+  
