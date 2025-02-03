@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Alert } from 'react-native';
 import { Button, Surface, TextInput } from 'react-native-paper';
 import CustomIcon from '../components/CustomIcon';
 import { icons } from '../utils/icons';
+import auth from '@react-native-firebase/auth';
+
 
 const RegisterScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -40,9 +42,15 @@ const RegisterScreen = ({ navigation }) => {
     return true;
   };
 
-  const handleRegister = () => {
+  const handleRegister = async() => {
     if (validateEmail(email) && validatePassword()) {
-      navigation.navigate('MainApp');
+      try {
+        await auth().createUserWithEmailAndPassword(email, password);
+        Alert.alert('Registration Successful');
+        navigation.navigate('Login');
+      } catch (error) {
+        Alert.alert('Error', error.message);
+      }
     }
   };
 

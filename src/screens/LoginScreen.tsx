@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Alert } from 'react-native';
 import { Button, Surface, TextInput } from 'react-native-paper';
 import CustomIcon from '../components/CustomIcon';
 import { icons } from '../utils/icons';
+import auth from '@react-native-firebase/auth';
 
 
 const LoginScreen = ({ navigation }) => {
@@ -25,9 +26,15 @@ const LoginScreen = ({ navigation }) => {
     return true;
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (validateEmail(email) && password) {
       navigation.navigate('MainApp');
+    }
+    try {
+      await auth().signInWithEmailAndPassword(email, password);
+      Alert.alert('Login Successful');
+    } catch (error) {
+      Alert.alert('Error', error.message);
     }
   };
 

@@ -6,7 +6,7 @@ const WelcomeScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Welcome</Text>
-      <Button mode="contained" onPress={() => navigation.navigate('MainApp')} style={{width: '80%', maxWidth: 300, borderRadius: 8}}>
+      <Button mode="contained" onPress={() => navigation.navigate('Login')} style={{width: '80%', maxWidth: 300, borderRadius: 8}}>
         <Text style={{fontSize: 18}}>
           Login
         </Text>

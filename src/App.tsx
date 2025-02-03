@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { CommonActions, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -10,6 +10,7 @@ import EncryptionScreen from './screens/EncryptionScreen';
 import { BottomNavigation, PaperProvider } from 'react-native-paper';
 import CustomIcon from './components/CustomIcon';
 import { icons } from './utils/icons';
+import auth from '@react-native-firebase/auth';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -87,10 +88,31 @@ const TabNavigator = () => {
 };
 
 const App = () => {
+    const [initializing, setInitializing] = useState(true);
+    const [user, setUser] = useState();
+  
+    // Handle user state changes
+    function onAuthStateChanged(user: any) {
+      setUser(user);
+      if (initializing) setInitializing(false);
+    }
+  
+    useEffect(() => {
+      const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
+      return subscriber; // unsubscribe on unmount
+    }, []);
+  
+    if (initializing) return null;
+
+  function getInitialPage() {
+    if (user) return 'MainApp'
+    else return 'Welcome'
+  }
+
   return (
     <NavigationContainer>
       <PaperProvider>
-        <Stack.Navigator initialRouteName="Welcome">
+        <Stack.Navigator initialRouteName={getInitialPage()}>
           <Stack.Screen
             name="Welcome"
             component={WelcomeScreen}
