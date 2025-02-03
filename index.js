@@ -13,9 +13,7 @@ import { PaperProvider } from 'react-native-paper';
 export default function Main() {
     return (
         <Provider store={store}>
-            <PaperProvider>
-                <App />
-            </PaperProvider>
+            <App />
         </Provider>
 
     );

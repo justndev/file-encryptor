@@ -1,5 +1,5 @@
 import React from 'react';
-import { Image, View, StyleSheet } from 'react-native';
+import { Image, View, StyleSheet, TouchableWithoutFeedback } from 'react-native';
 
 interface CustomIconProps {
   source: string;
@@ -9,19 +9,22 @@ interface CustomIconProps {
 
 const CustomIcon = ({ source, size = 24, onPress }: CustomIconProps) => {
   return (
-    <View style={[styles.iconContainer]}>
-      <Image
-        source={source}
-        style={[
-          styles.icon,
-          {
-            width: size,
-            height: size,
-          },
-        ]}
-        resizeMode="contain"
-      />
-    </View>
+    <TouchableWithoutFeedback onPress={onPress}>
+      <View style={[styles.iconContainer]}>
+        <Image
+          source={source}
+          style={[
+            styles.icon,
+            {
+              width: size,
+              height: size,
+            },
+          ]}
+          resizeMode="contain"
+        />
+      </View>
+    </TouchableWithoutFeedback>
+
   );
 };
 
