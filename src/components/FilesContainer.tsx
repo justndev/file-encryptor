@@ -1,18 +1,25 @@
 // FilesContainer.js
 import { StyleSheet, View } from "react-native";
 import FileCard from "./FileCard";
+import { useDispatch } from "react-redux";
+import { setSelectedFileToDownload } from "../redux/appSlice";
 
 const FilesContainer = ({files}) => {
+  const dispatch = useDispatch();
+  function handleFilePress(file: any) {
+    dispatch(setSelectedFileToDownload(file))
+  }
   function renderFiles() {
-    return testFiles.map((file, index) => (
+    return files.map((file, index) => (
       <FileCard 
         key={index}
         fileName={file.fileName} 
-        size={file.size} 
-        link={file.link} 
+        fileSize={file.fileSize} 
+        fileUrl={file.fileUrl} 
+        onPress={handleFilePress}
       />
     ));
-  }
+  };
 
   return (
     <View style={styles.container}>

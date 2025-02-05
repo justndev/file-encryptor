@@ -1,4 +1,6 @@
-import RNFetchBlob from "rn-fetch-blob";
+import { PermissionsAndroid, Platform } from 'react-native';
+import {requestMultiple, PERMISSIONS} from 'react-native-permissions';
+import RNFetchBlob from 'rn-fetch-blob';
 
 export const FileService = {
     stringToTextFile(content: BlobPart, fileName: string) {
@@ -157,22 +159,66 @@ export const FileService = {
       }
     },
   
-    async downloadAndSaveFile(fileUrl: string, fileName: string) {
-        try {
-            const { config, fs } = RNFetchBlob;
-            const downloadPath = `${fs.dirs.DownloadDir}/${fileName}`;
-    
-            const res = await config({
-                fileCache: true,
-                path: downloadPath,
-            }).fetch('GET', fileUrl);
-    
-            console.log(`File downloaded to: ${res.path()}`);
-            return res.path();
-        } catch (error) {
-            console.log(`File download failed: ${error.message}`);
-            throw error;
+    async downloadAndSaveFile(fileUrl, filename)  {
+      try {
+        // Request storage permission on Android
+        if (Platform.OS === 'android') {
+          console.log('Requesting Android storage permission...');
+          try {
+            const result = await requestMultiple([PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE]);
+            console.log(result)
+            console.log('and?')
+            // const granted = await PermissionsAndroid.request(
+            //   PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+            //   {
+            //     title: 'Storage Permission',
+            //     message: 'App needs access to storage to download files.',
+            //     buttonNeutral: 'Ask Me Later',
+            //     buttonNegative: 'Cancel',
+            //     buttonPositive: 'OK',
+            //   }
+            // );
+            
+            // console.log('Permission request result:', granted);
+            
+            // if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+            //   console.log('Permission denied');
+            //   throw new Error('Storage permission denied');
+            // }
+            
+            // console.log('Permission granted successfully');
+          } catch (permissionError) {
+            console.error('Error requesting permission:', permissionError);
+            throw new Error(`Permission request failed: ${permissionError.message}`);
+          }
         }
+    
+        // Get the device's download directory path
+        const downloadDir = Platform.OS === 'ios' 
+          ? RNFetchBlob.fs.dirs.DocumentDir 
+          : RNFetchBlob.fs.dirs.DownloadDir;
+        
+        console.log('Download directory:', downloadDir);
+    
+        // Configure the download
+        const response = await RNFetchBlob.config({
+          fileCache: true,
+          addAndroidDownloads: {
+            useDownloadManager: true,
+            notification: true,
+            path: `${downloadDir}/${filename}`,
+            description: 'Downloading file...',
+          },
+          path: `${downloadDir}/${filename}` // for iOS
+        }).fetch('GET', fileUrl);
+    
+        console.log('Download completed:', response.path());
+        return response.path();
+    
+      } catch (error) {
+        console.error('Download error:', error);
+        throw error;
+      }
     },
 
     isSupportedFileType(fileType: string): boolean {

@@ -1,19 +1,36 @@
 // FileCard.js
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, TouchableWithoutFeedback, View } from "react-native";
 import CustomIcon from "./CustomIcon";
 import { icons } from "../utils/icons";
+import { useDispatch, useSelector } from "react-redux";
+import { setSelectedFileToDownload } from "../redux/appSlice";
+import FirebaseService from "../services/FirebaseService";
+import FileService from "../services/FileService";
 
-const FileCard = ({ fileName, link, size, type }) => {
+const FileCard = ({ fileName, fileUrl, fileSize, type, onPress}) => {
+  const dispatch = useDispatch()
+  const selectedFileToDownload = useSelector((state) => state.app.selectedFileToDownload)
+
+  function handlePress() {
+    const file = { fileName, fileUrl, fileSize, type}
+    dispatch(setSelectedFileToDownload({file}))
+  }
+
+
+
   return (
+    <TouchableWithoutFeedback onPress={handlePress}>
     <View style={[styles.card, type == 1 && styles.whiteField]}>
-      <CustomIcon source={icons.file} size={100} />
+      <CustomIcon source={icons.file} size={100} onPress={handlePress}/>
       <Text style={styles.fileName}>
         {fileName}
       </Text>
       <Text style={styles.fileSize}>
-        {size}
+        {fileSize}
       </Text>
     </View>
+    </TouchableWithoutFeedback>
+
   );
 };
 

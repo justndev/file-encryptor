@@ -4,13 +4,17 @@ import { Button, Surface, TextInput } from 'react-native-paper';
 import CustomIcon from '../components/CustomIcon';
 import { icons } from '../utils/icons';
 import auth from '@react-native-firebase/auth';
+import store from '../redux/store';
+import { setUser } from '../redux/userSlice';
+import { useDispatch } from 'react-redux';
 
 
 const LoginScreen = ({ navigation }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('n@n.com');
+  const [password, setPassword] = useState('Nnnnnn');
   const [showPassword, setShowPassword] = useState(false);
   const [emailError, setEmailError] = useState('');
+  const dispatch = useDispatch();
 
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -28,14 +32,21 @@ const LoginScreen = ({ navigation }) => {
 
   const handleLogin = async () => {
     if (validateEmail(email) && password) {
-      navigation.navigate('MainApp');
-    }
-    try {
-      await auth().signInWithEmailAndPassword(email, password);
-      Alert.alert('Login Successful');
-    } catch (error) {
-      Alert.alert('Error', error.message);
-    }
+      try {
+        const credentials = await auth().signInWithEmailAndPassword(email, password);
+        dispatch(
+          setUser({
+            userId: credentials.user.uid
+          })
+        );
+
+        Alert.alert('Login Successful');
+        navigation.navigate('MainApp');
+  
+      } catch (error) {
+        Alert.alert('Error', error.message);
+      };
+    };
   };
 
   // Custom left and right components for TextInput

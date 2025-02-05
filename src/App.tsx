@@ -15,6 +15,7 @@ import auth from '@react-native-firebase/auth';
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
+
 const TabNavigator = () => {
   return (
     <Tab.Navigator

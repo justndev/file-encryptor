@@ -4,6 +4,8 @@ import { Button, Surface, TextInput } from 'react-native-paper';
 import CustomIcon from '../components/CustomIcon';
 import { icons } from '../utils/icons';
 import auth from '@react-native-firebase/auth';
+import { useDispatch } from 'react-redux';
+import { setUser } from '../redux/userSlice';
 
 
 const RegisterScreen = ({ navigation }) => {
@@ -14,6 +16,7 @@ const RegisterScreen = ({ navigation }) => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const dispatch = useDispatch()
 
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -45,8 +48,13 @@ const RegisterScreen = ({ navigation }) => {
   const handleRegister = async() => {
     if (validateEmail(email) && validatePassword()) {
       try {
-        await auth().createUserWithEmailAndPassword(email, password);
+        const credentials = await auth().createUserWithEmailAndPassword(email, password);
         Alert.alert('Registration Successful');
+        dispatch(
+          setUser({
+            userId: credentials.user.uid
+          })
+        );
         navigation.navigate('Login');
       } catch (error) {
         Alert.alert('Error', error.message);
