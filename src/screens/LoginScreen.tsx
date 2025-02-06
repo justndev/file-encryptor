@@ -1,22 +1,25 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
 import { Button, Surface, TextInput } from 'react-native-paper';
-import CustomIcon from '../components/CustomIcon';
-import { icons } from '../utils/icons';
+
 import auth from '@react-native-firebase/auth';
-import store from '../redux/store';
 import { setUser } from '../redux/userSlice';
 import { useDispatch } from 'react-redux';
 
+import CustomIcon from '../components/CustomIcon';
+import { icons } from '../utils/icons';
+
 
 const LoginScreen = ({ navigation }) => {
+  // Screen values
   const [email, setEmail] = useState('n@n.com');
   const [password, setPassword] = useState('Nnnnnn');
   const [showPassword, setShowPassword] = useState(false);
   const [emailError, setEmailError] = useState('');
+
   const dispatch = useDispatch();
 
-  const validateEmail = (email) => {
+  const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email) {
       setEmailError('Email is required');
@@ -33,12 +36,7 @@ const LoginScreen = ({ navigation }) => {
   const handleLogin = async () => {
     if (validateEmail(email) && password) {
       try {
-        const credentials = await auth().signInWithEmailAndPassword(email, password);
-        dispatch(
-          setUser({
-            userId: credentials.user.uid
-          })
-        );
+        await auth().signInWithEmailAndPassword(email, password);
 
         Alert.alert('Login Successful');
         navigation.navigate('MainApp');
@@ -49,20 +47,18 @@ const LoginScreen = ({ navigation }) => {
     };
   };
 
-  // Custom left and right components for TextInput
   const EmailIcon = () => 
     <CustomIcon
-      source={icons.mail} // You'll need to add your icon
+      source={icons.mail}
       size={20}
     />
 
   const PasswordIcon = () => 
     <CustomIcon
-      source={icons.lock} // You'll need to add your icon
+      source={icons.lock}
       size={20}
     />
   
-
   const EyeIcon = () => 
     <CustomIcon
       source={showPassword ? 
@@ -73,7 +69,6 @@ const LoginScreen = ({ navigation }) => {
   
 
   return (
-    <Surface style={styles.surface}>
       <View style={styles.container}>
         <Text style={styles.title}>Welcome Back</Text>
         
@@ -135,16 +130,12 @@ const LoginScreen = ({ navigation }) => {
           </Button>
         </View>
       </View>
-    </Surface>
   );
 };
 
 const styles = StyleSheet.create({
-  surface: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
   container: {
+    backgroundColor: '#fff',
     flex: 1,
     padding: 20,
     justifyContent: 'center',

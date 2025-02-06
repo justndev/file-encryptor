@@ -1,22 +1,22 @@
-// FilesContainer.js
 import { StyleSheet, View } from "react-native";
 import FileCard from "./FileCard";
-import { useDispatch } from "react-redux";
-import { setSelectedFileToDownload } from "../redux/appSlice";
+import { useEffect, useState } from "react";
 
-const FilesContainer = ({files}) => {
-  const dispatch = useDispatch();
-  function handleFilePress(file: any) {
-    dispatch(setSelectedFileToDownload(file))
-  }
-  function renderFiles() {
+const FilesContainer = ({ userFiles }) => {
+  const [files, setFiles] = useState(userFiles || []);
+
+  useEffect(() => {
+    setFiles(userFiles);
+  }, [userFiles]); // Следит за изменениями в userFiles
+
+  function renderFiles() {    
     return files.map((file, index) => (
       <FileCard 
         key={index}
         fileName={file.fileName} 
         fileSize={file.fileSize} 
         fileUrl={file.fileUrl} 
-        onPress={handleFilePress}
+        fileId={file.fileId}
       />
     ));
   };
@@ -29,61 +29,13 @@ const FilesContainer = ({files}) => {
 };
 
 const styles = StyleSheet.create({
-    container: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      justifyContent: 'space-between', // Changed from flex-start to space-between
-      padding: 16, // Increased padding for better edge spacing
-      gap: 16, // Increased gap for consistent spacing
-    },
-  });
+  container: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    padding: 16,
+    gap: 16,
+  },
+});
 
 export default FilesContainer;
-
-const testFiles = [
-    {
-        fileName: 'fileName.txt',
-        size: '20MB',
-        link: 'test.ru'
-    },
-    {
-        fileName: 'fileName.txt',
-        size: '20MB',
-        link: 'test.ru'
-    },
-    {
-        fileName: 'fileName.txt',
-        size: '20MB',
-        link: 'test.ru'
-    },
-    {
-        fileName: 'fileName.txt',
-        size: '20MB',
-        link: 'test.ru'
-    },
-    {
-        fileName: 'fileName.txt',
-        size: '20MB',
-        link: 'test.ru'
-    },
-    {
-        fileName: 'fileName.txt',
-        size: '20MB',
-        link: 'test.ru'
-    },
-    {
-        fileName: 'fileName.txt',
-        size: '20MB',
-        link: 'test.ru'
-    },
-    {
-        fileName: 'fileName.txt',
-        size: '20MB',
-        link: 'test.ru'
-    },
-    {
-        fileName: 'fileName.txt',
-        size: '20MB',
-        link: 'test.ru'
-    },
-];

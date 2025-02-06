@@ -1,86 +1,74 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Alert } from 'react-native';
+import { ActivityIndicator, Button, Modal, Portal, Snackbar } from 'react-native-paper';
+
+import { requestGalleryWithPermission, requestCameraWithPermission } from '../services/PickerHelper';
+import { useSelector } from 'react-redux';
+import storageService from '../services/storageService';
+import firebaseService from '../services/firebaseService';
+import { RootState } from '../redux/store';
+
 import CustomIcon from '../components/CustomIcon';
 import FileCard from '../components/FileCard';
 import { icons } from '../utils/icons';
-import { ActivityIndicator, Button, MD2Colors, Modal, Portal, Snackbar } from 'react-native-paper';
-import { requestDocumentWithPermission, requestGalleryWithPermission, requestCameraWithPermission } from '../services/PickerHelper';
-import FirebaseService from '../services/FirebaseService';
-import EncryptionService from '../services/EncryptionService';
-import { useDispatch, useSelector } from 'react-redux';
-import auth from '@react-native-firebase/auth'
-import { logout } from '../redux/userSlice';
-import { useNavigation } from '@react-navigation/native';
+
 
 const EncryptionScreen = () => {
   const [selectedFile, setSelectedFile] = useState<any>()
-  const [showModal, setShowModal] = useState(false)
   const [showActivity, setShowActivity] = useState(false)
   const [showSnackbar, setShowSnackbar] = useState(false)
-  const userId = useSelector((state) => state.user.userId);
-  const dispatch = useDispatch()
-  const navigation = useNavigation(); // To navigate after logout
-
-  const handleLogout = async () => {
-    try {
-      await auth().signOut(); // ✅ Sign out from Firebase
-      dispatch(logout()); // ✅ Clear user data from Redux
-      Alert.alert('Success', 'You have been logged out.');
-      navigation.navigate('Welcome'); // ✅ Navigate to Welcome/Login screen
-    } catch (error) {
-      Alert.alert('Error', error.message);
-    }
-  };
+  const user = useSelector((state: RootState) => state.user.user)
 
   // https://dev.to/ajmal_hasan/react-native-fileimage-picker-1o2j
-  const onPressItem = async (index) => {
-    setTimeout(async () => {
-      if (index === 0) {
-        const response = await requestDocumentWithPermission();
-      Alert.alert(JSON.stringify(response));
-      }
-      if (index === 1) {
-        const response = await requestGalleryWithPermission();
-        response && setSelectedFile(response)
-        Alert.alert(JSON.stringify(response));
-      }
-      if (index === 2) {
-        const response = await requestCameraWithPermission();
-        Alert.alert(JSON.stringify(response));
-      }
-    }, 1000);
+  const onPressItem = async (index: number) => {
+    try {
+      setTimeout(async () => {
+        if (index === 0) {
+          const file = await storageService.pickFile();
+          file && setSelectedFile(file)
+        Alert.alert(JSON.stringify(file));
+        }
+        if (index === 1) {
+          const response = await requestGalleryWithPermission();
+          response && setSelectedFile(response)
+          Alert.alert(JSON.stringify(response));
+        }
+        if (index === 2) {
+          const response = await requestCameraWithPermission();
+          Alert.alert(JSON.stringify(response));
+        }
+      }, 1000);
+
+    } catch (error) {
+      const errMsh = `Error: + ${(error as Error).message}`
+      console.log(errMsh)
+      Alert.alert(errMsh)
+    };
   };
 
   async function handleEncryptAndUpload() {
-    FirebaseService.uploadFile(selectedFile, selectedFile.name, selectedFile.size, EncryptionService.generateKey(), userId)
+    try {
+      const fileUrl = await storageService.uploadFile(selectedFile.uri, selectedFile.name);
+      firebaseService.addFileUrlToFirestore(user.user.uid, fileUrl, selectedFile.name, selectedFile.size)
+      setShowSnackbar(true)
+    } catch (error) {
+
+      const errMsh = `Error: + ${(error as Error).message}`
+      console.log(errMsh)
+      Alert.alert(errMsh)
+    };
   }; 
 
   return (
     <View style={styles.container}>
-      <Button mode="contained" onPress={() => setShowSnackbar(true)}>
+      <Button mode="contained" onPress={() => onPressItem(0)}>
         Select File
       </Button>
-      <View>
-      <TouchableOpacity onPress={() => onPressItem(0)}>
-        <Text>Open Document</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={() => onPressItem(1)} >
-        <Text>Open Gallery</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={() => onPressItem(2)}>
-        <Text>Open Camera</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() =>auth().signOut()}>
-        <Text>Log out</Text>
-      </TouchableOpacity>
-    </View>
 
       <Portal>
         <Modal
           visible={!!selectedFile}
-          onDismiss={() => setShowModal(false)}
+          onDismiss={() => setSelectedFile(null)}
           contentContainerStyle={containerStyle}
         >
             <View style={styles.modalExitContainer}>
@@ -107,7 +95,6 @@ const EncryptionScreen = () => {
         action={{
           label: 'Dismiss',
           onPress: () => {
-            // Do something
           },
         }}>
         Success!

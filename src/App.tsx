@@ -11,6 +11,10 @@ import { BottomNavigation, PaperProvider } from 'react-native-paper';
 import CustomIcon from './components/CustomIcon';
 import { icons } from './utils/icons';
 import auth from '@react-native-firebase/auth';
+import { useDispatch, useSelector } from 'react-redux';
+import { setUser } from './redux/userSlice';
+import { RootState } from './redux/store';
+import SettingsScreen from './screens/SettingsScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -65,7 +69,7 @@ const TabNavigator = () => {
       )}
     >
       <Tab.Screen
-        name="Home"
+        name="My Files"
         component={LibraryScreen}
         options={{
           tabBarLabel: 'My Files',
@@ -75,12 +79,22 @@ const TabNavigator = () => {
         }}
       />
       <Tab.Screen
-        name="Settings"
+        name="Encrypt"
         component={EncryptionScreen}
         options={{
           tabBarLabel: 'Encrypt',
           tabBarIcon: ({ color, size }) => {
             return <CustomIcon source={icons.edit} size={size}/>;
+          },
+        }}
+      />
+        <Tab.Screen
+        name="Settings"
+        component={SettingsScreen}
+        options={{
+          tabBarLabel: 'Settings',
+          tabBarIcon: ({ color, size }) => {
+            return <CustomIcon source={icons.hamburger} size={size}/>;
           },
         }}
       />
@@ -90,17 +104,17 @@ const TabNavigator = () => {
 
 const App = () => {
     const [initializing, setInitializing] = useState(true);
-    const [user, setUser] = useState();
+    const user = useSelector((state: RootState) => state.user.user)
+    const dispatch = useDispatch();
   
-    // Handle user state changes
     function onAuthStateChanged(user: any) {
-      setUser(user);
+      dispatch(setUser({user:{uid: user.uid, email: user.email}}));
       if (initializing) setInitializing(false);
     }
   
     useEffect(() => {
       const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
-      return subscriber; // unsubscribe on unmount
+      return subscriber;
     }, []);
   
     if (initializing) return null;

@@ -1,34 +1,39 @@
-// FileCard.js
 import { StyleSheet, Text, TouchableWithoutFeedback, View } from "react-native";
+import { useDispatch } from "react-redux";
+import { setSelectedFileToDownload } from "../redux/appSlice";
+
 import CustomIcon from "./CustomIcon";
 import { icons } from "../utils/icons";
-import { useDispatch, useSelector } from "react-redux";
-import { setSelectedFileToDownload } from "../redux/appSlice";
-import FirebaseService from "../services/FirebaseService";
-import FileService from "../services/FileService";
 
-const FileCard = ({ fileName, fileUrl, fileSize, type, onPress}) => {
+
+
+interface FileCardProps {
+  fileName: string;
+  fileUrl: string;
+  fileSize: string;
+  type?: number;
+  fileId: string;
+}
+
+const FileCard = ({ fileName, fileUrl, fileSize, type, fileId }: FileCardProps) => {
   const dispatch = useDispatch()
-  const selectedFileToDownload = useSelector((state) => state.app.selectedFileToDownload)
 
   function handlePress() {
-    const file = { fileName, fileUrl, fileSize, type}
-    dispatch(setSelectedFileToDownload({file}))
+    const file = { fileName, fileUrl, fileSize, type, fileId }
+    dispatch(setSelectedFileToDownload({ file }))
   }
-
-
 
   return (
     <TouchableWithoutFeedback onPress={handlePress}>
-    <View style={[styles.card, type == 1 && styles.whiteField]}>
-      <CustomIcon source={icons.file} size={100} onPress={handlePress}/>
-      <Text style={styles.fileName}>
-        {fileName}
-      </Text>
-      <Text style={styles.fileSize}>
-        {fileSize}
-      </Text>
-    </View>
+      <View style={[styles.card, type == 1 && styles.whiteField]}>
+        <CustomIcon source={icons.file} size={100} onPress={handlePress} />
+        <Text style={styles.fileName}>
+          {fileName}
+        </Text>
+        <Text style={styles.fileSize}>
+          {fileSize}
+        </Text>
+      </View>
     </TouchableWithoutFeedback>
 
   );
@@ -36,7 +41,7 @@ const FileCard = ({ fileName, fileUrl, fileSize, type, onPress}) => {
 
 const styles = StyleSheet.create({
   card: {
-    width: '30%', // Slightly less than 33.33% to account for gap
+    width: '30%',
     alignItems: 'center',
     padding: 10,
   },

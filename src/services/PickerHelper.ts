@@ -199,39 +199,6 @@ const pickImageFromGallery = async () => {
   }
 };
 
-const uploadFileImageOrPdf = async (fileBlob, isFromImagePicker = true) => {
-  try {
-    const formData = new FormData();
-    if (isFromImagePicker) {
-      formData.append('file', {
-        uri: fileBlob?.path,
-        type: fileBlob?.mime,
-        name: fileBlob?.filename, // Adjust the filename as needed
-      });
-    } else {
-      formData.append('file', {
-        uri: fileBlob[0]?.uri,
-        type: fileBlob[0]?.type,
-        name: fileBlob[0]?.name, // Adjust the filename as needed
-      });
-    }
-
-    const response = await fetch('YOUR_API_ENDPOINT', {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'Content-Type': 'multipart/form-data',
-        // You may need to include additional headers depending on your API requirements
-      },
-    });
-
-    const responseData = await response.json();
-    console.log('File upload response:', responseData);
-  } catch (error) {
-    console.log('File upload error:', error);
-  }
-};
-
 export {
   requestDocumentWithPermission,
   requestCameraWithPermission,

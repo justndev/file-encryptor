@@ -7,13 +7,13 @@ import EncryptionService from './EncryptionService';
 import RNFS from 'react-native-fs';
 
 
-const FirebaseService = {
+const firebaseService = {
     async login(email: string, password: string) {
         try {
             const credentials = await auth().signInWithEmailAndPassword(email, password);
             return credentials;
         } catch (error) {
-            console.log(`Login failed: ${error.message}`);
+            console.log(`Login failed: ${(error as Error).message}`);
             throw error;
         }
     },
@@ -22,7 +22,7 @@ const FirebaseService = {
         try {
             return await auth().createUserWithEmailAndPassword(email, password);
         } catch (error) {
-            console.log(`Registration failed: ${error.message}`);
+            console.log(`Registration failed: ${(error as Error).message}`);
             throw error;
         }
     },
@@ -33,13 +33,47 @@ const FirebaseService = {
             await firestore().collection('fileUrls').add(obj);
             console.log('File url added to Firestore');
         } catch (error) {
-            console.log(`Firestore write failed: ${error.message}`);
+            console.log(`Firestore write failed: ${(error as Error).message}`);
             throw error;
         }
     },
+    async deleteFileAndDocument(documentId: string, folderPath = 'uploads/') {
+        try {
+          const documentSnapshot = await firestore()
+            .collection('fileUrls')
+            .doc(documentId)
+            .get();
+      
+          if (!documentSnapshot.exists) {
+            throw new Error('Document not found');
+          }
+      
+          const fileData = documentSnapshot.data();
+          
+          if (!fileData) {
+            throw new Error('No file data found');
+          }
+      
+          // Delete file from Firebase Storage
+          const fileName = fileData.fileName;
+          const reference = storage().ref(`${folderPath}${fileName}`);
+          await reference.delete();
+      
+          // Delete document from Firestore
+          await firestore()
+            .collection('fileUrls')
+            .doc(documentId)
+            .delete();
+      
+          console.log('File and document successfully deleted');
+          return true;
+        } catch (error) {
+          console.error('Error deleting file and document:', (error as Error).message);
+          throw error;
+        }
+      },
 
     async getFileLinksFromFirestore(userId: string) {
-        console.log('fun start')
         try {
             const querySnapshot = await firestore()
                 .collection('fileUrls')
@@ -47,8 +81,8 @@ const FirebaseService = {
                 .get();
             
             if (!querySnapshot.empty) {
-                const docs =  querySnapshot.docs.map(doc => doc.data());
-                console.log(docs);
+                const docs =  querySnapshot.docs.map(doc => ({...doc.data(), fileId: doc.id}));
+                
                 return docs;
 
             } else {
@@ -56,7 +90,7 @@ const FirebaseService = {
                 return [];
             }
         } catch (error) {
-            console.log(`Firestore read failed: ${error.message}`);
+            console.log(`Firestore read failed: ${(error as Error).message}`);
             throw error;
         }
     },
@@ -65,6 +99,7 @@ const FirebaseService = {
         try {
             const content = await RNFS.readFile(file.uri, 'base64');
             const encryptedContent = EncryptionService.encryptFile(content, secretKey);
+            const decryptedContent = EncryptionService.decryptFile(encryptedContent, secretKey)
             
             // Convert encrypted string to Blob
             const blob = new Blob([encryptedContent], { type: 'text/plain' });
@@ -79,23 +114,11 @@ const FirebaseService = {
             console.log('File uploaded:', url);
             return url;
         } catch (error) {
-            console.log(`File upload failed: ${error.message}`);
+            console.log(`File upload failed: ${(error as Error).message}`);
             console.log(error)
             throw error;
         }
     },
-    
-
-    async getFileDownloadUrl(fileName: any) {
-        try {
-            const url = await storage().ref(fileName).getDownloadURL();
-            return url;
-        } catch (error) {
-            console.log(`Get file URL failed: ${error.message}`);
-            throw error;
-        }
-    },
-
 };
 
-export default FirebaseService;
+export default firebaseService;

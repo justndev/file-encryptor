@@ -16,9 +16,11 @@ const RegisterScreen = ({ navigation }) => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+
   const dispatch = useDispatch()
 
-  const validateEmail = (email) => {
+  
+  const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email) {
       setEmailError('Email is required');
@@ -48,13 +50,8 @@ const RegisterScreen = ({ navigation }) => {
   const handleRegister = async() => {
     if (validateEmail(email) && validatePassword()) {
       try {
-        const credentials = await auth().createUserWithEmailAndPassword(email, password);
+        await auth().createUserWithEmailAndPassword(email, password);
         Alert.alert('Registration Successful');
-        dispatch(
-          setUser({
-            userId: credentials.user.uid
-          })
-        );
         navigation.navigate('Login');
       } catch (error) {
         Alert.alert('Error', error.message);
@@ -62,7 +59,6 @@ const RegisterScreen = ({ navigation }) => {
     }
   };
 
-  // Custom icon components
   const EmailIcon = () => (
     <CustomIcon
       source={icons.mail}
@@ -85,7 +81,6 @@ const RegisterScreen = ({ navigation }) => {
   );
 
   return (
-    <Surface style={styles.surface}>
       <View style={styles.container}>
         <Text style={styles.title}>Create Account</Text>
         
@@ -167,16 +162,12 @@ const RegisterScreen = ({ navigation }) => {
           </Button>
         </View>
       </View>
-    </Surface>
   );
 };
 
 const styles = StyleSheet.create({
-  surface: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
   container: {
+    backgroundColor: '#fff',
     flex: 1,
     padding: 20,
     justifyContent: 'center',
