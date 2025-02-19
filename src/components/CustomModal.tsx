@@ -1,6 +1,6 @@
 import { StyleSheet, View } from "react-native";
 import { Modal, Portal } from "react-native-paper";
-import { icons } from "../utils/icons";
+import { icons } from "../constants/icons";
 import CustomIcon from "./CustomIcon";
 
 

@@ -25,15 +25,6 @@ const storageService = {
         const fileExists = await RNFS.exists(filePath);
         console.log('File exists after download:', fileExists);
 
-        try {
-          await FileViewer.open(`${RNFS.ExternalDirectoryPath}`, {
-            showOpenWithDialog: true, // Force open dialog
-          });
-          console.log('File opened successfully');
-        } catch (error) {
-          console.log('Error opening file:', error);
-        }
-
         return filePath;
       } else {
         throw new Error('Download failed with status: ' + response.statusCode);

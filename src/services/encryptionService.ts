@@ -1,82 +1,22 @@
 import RNEncryptionModule from "@dhairyasharma/react-native-encryption";
-import { randomBytes } from "react-native-randombytes";
 
 export class EncryptionService {
-  /**
-   * Generates a secure encryption key, IV, and salt.
-   * @returns {Promise<{ encryptionKey: string; iv: string; salt: string }>}
-   */
-  async generateEncryptionMetadata() {
-    return new Promise((resolve, reject) => {
-      randomBytes(32, (err, keyBuffer) => {
-        if (err) {
-          reject("Error generating encryption key");
-        } else {
-          randomBytes(16, (err, ivBuffer) => {
-            if (err) {
-              reject("Error generating IV");
-            } else {
-              randomBytes(16, (err, saltBuffer) => {
-                if (err) {
-                  reject("Error generating salt");
-                } else {
-                  resolve({
-                    encryptionKey: keyBuffer.toString("base64"),
-                    iv: ivBuffer.toString("base64"),
-                    salt: saltBuffer.toString("base64"),
-                  });
-                }
-              });
-            }
-          });
-        }
-      });
-    });
-  }
 
-  /**
-   * Encrypts text using a given key.
-   */
-  async encryptText(plainText: string, key: string) {
-    try {
-      const result = await RNEncryptionModule.encryptText(plainText, key);
-      if (result.status === "success") {
-        return { encryptedText: result.encryptedText, iv: result.iv, salt: result.salt };
-      } else {
-        throw new Error("Text encryption failed");
-      }
-    } catch (error) {
-      console.error("Encryption error:", error);
-      throw error;
+  generateEncryptionKey(length = 10) {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+      result += characters.charAt(Math.floor(Math.random() * characters.length));
     }
-  }
+    return result;
+  };
 
-  /**
-   * Decrypts text using a given key.
-   */
-  async decryptText(encryptedText: string, key: string, iv: string, salt: string): Promise<string> {
-    try {
-      const result = await RNEncryptionModule.decryptText(encryptedText, key, iv, salt);
-      if (result.status === "success") {
-        return result.decryptedText;
-      } else {
-        throw new Error("Text decryption failed");
-      }
-    } catch (error) {
-      console.error("Decryption error:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Encrypts a file.
-   */
   async encryptFile(inputFilePath: string, outputEncryptedFilePath: string, key: string) {
     try {
       return RNEncryptionModule.encryptFile(
         inputFilePath,
         outputEncryptedFilePath,
-        'password'
+        key
       ).then((res: any) => {
           if (res.status == "success") {
               console.log("success", res)
@@ -94,15 +34,12 @@ export class EncryptionService {
     }
   }
 
-  /**
-   * Decrypts a file.
-   */
   async decryptFile(encryptedFilePath: string, outputDecryptedFilePath: string, key: string, iv: string, salt: string) {
     try {
       RNEncryptionModule.decryptFile(
         encryptedFilePath,
         outputDecryptedFilePath,
-        'password',
+        key,
         iv,
         salt
       ).then((res: any) => {
@@ -121,5 +58,4 @@ export class EncryptionService {
   }
 }
 
-// Export singleton instance
 export const encryptionService = new EncryptionService();

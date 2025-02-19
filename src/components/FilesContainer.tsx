@@ -18,6 +18,8 @@ const FilesContainer = ({ userFiles }) => {
         fileSize={file.fileSize} 
         fileUrl={file.fileUrl} 
         fileId={file.fileId}
+        iv={file.iv}
+        salt={file.salt}
       />
     ));
   };

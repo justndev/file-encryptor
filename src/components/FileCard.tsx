@@ -3,7 +3,7 @@ import { useDispatch } from "react-redux";
 import { setSelectedFileToDownload } from "../redux/appSlice";
 
 import CustomIcon from "./CustomIcon";
-import { icons } from "../utils/icons";
+import { icons } from "../constants/icons";
 
 
 interface FileCardProps {
@@ -12,13 +12,15 @@ interface FileCardProps {
   fileSize: string;
   type?: number;
   fileId: string;
+  iv: string;
+  salt: string;
 };
 
-const FileCard = ({ fileName, fileUrl, fileSize, type, fileId }: FileCardProps) => {
+const FileCard = ({ fileName, fileUrl, fileSize, type, fileId, iv, salt }: FileCardProps) => {
   const dispatch = useDispatch()
 
   function handlePress() {
-    const file = { fileName, fileUrl, fileSize, type, fileId }
+    const file = { fileName, fileUrl, fileSize, type, fileId, iv, salt }
     dispatch(setSelectedFileToDownload({ file }))
   }
 

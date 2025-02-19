@@ -6,6 +6,8 @@ interface File {
   fileUrl: string;
   userId: string;
   fileId: string;
+  iv: any;
+  salt: any;
 };
 
 const initialState: {

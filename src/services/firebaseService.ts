@@ -1,11 +1,10 @@
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
+import { setUser } from '../redux/userSlice';
+import { CommonActions } from '@react-navigation/native';
 
 const firebaseService = {
-    /**
-     * Logs in a user with email and password.
-     */
     async login(email: string, password: string) {
         try {
             const credentials = await auth().signInWithEmailAndPassword(email, password);
@@ -15,10 +14,6 @@ const firebaseService = {
             throw error;
         }
     },
-
-    /**
-     * Registers a new user with email and password.
-     */
     async register(email: string, password: string) {
         try {
             return await auth().createUserWithEmailAndPassword(email, password);
@@ -27,13 +22,9 @@ const firebaseService = {
             throw error;
         }
     },
-
-    /**
-     * Stores a file URL in Firestore.
-     */
-    async addFileUrlToFirestore(userId: string, fileUrl: string, fileName: string, fileSize: string) {
+    async addFileUrlToFirestore(userId: string, fileUrl: string, fileName: string, fileSize: string, iv: any, salt: any) {
         try {
-            const obj = { userId, fileUrl, fileName, fileSize, uploadedAt: new Date().toISOString() };
+            const obj = { userId, fileUrl, fileName, fileSize, uploadedAt: new Date().toISOString(), iv, salt };
             const doc = await firestore().collection('fileUrls').add(obj);
             console.log('File URL added to Firestore');
             return doc.id;
@@ -42,31 +33,22 @@ const firebaseService = {
             throw error;
         }
     },
-
-    /**
-     * Stores an encryption key in Firestore (linked to a file).
-     */
-    async storeEncryptionKey(userId: string, fileId: string, encryptionKey: string) {
+    async storeEncryptionKey(userId: string, encryptionKey: string) {
         try {
             await firestore()
-                .collection('encryptionKeys')
-                .doc(fileId)
-                .set({ userId, encryptionKey });
+                .collection('encryption_keys')
+                .doc(userId)
+                .set({ encryptionKey });
 
-            console.log(`Encryption key stored for file ${fileId}`);
+            console.log(`Encryption key stored for user ${userId} in encryption_keys`);
         } catch (error) {
             console.error(`Error storing encryption key: ${(error as Error).message}`);
             throw error;
         }
     },
-
-    /**
-     * Retrieves an encryption key from Firestore.
-     */
-    async getEncryptionKey(fileId: string): Promise<string> {
+    async getEncryptionKey(userId: string): Promise<string> {
         try {
-            console.log(`File id: ${fileId}`)
-            const doc = await firestore().collection('encryptionKeys').doc(fileId).get();
+            const doc = await firestore().collection('encryption_keys').doc(userId).get();
 
             if (!doc.exists) {
                 throw new Error('Encryption key not found');
@@ -79,45 +61,6 @@ const firebaseService = {
             throw error;
         }
     },
-
-    /**
-     * Stores encryption metadata (IV & salt) for a file.
-     */
-    async storeFileEncryptionMetadata(userId: string, fileId: string, iv: string, salt: string) {
-        try {
-            await firestore()
-                .collection('fileMetadata')
-                .doc(fileId)
-                .set({ userId, iv, salt });
-
-            console.log(`Encryption metadata stored for file ${fileId}`);
-        } catch (error) {
-            console.error(`Error storing encryption metadata: ${(error as Error).message}`);
-            throw error;
-        }
-    },
-
-    /**
-     * Retrieves encryption metadata (IV & salt) for a file.
-     */
-    async getFileEncryptionMetadata(fileId: string) {
-        try {
-            const doc = await firestore().collection('fileMetadata').doc(fileId).get();
-
-            if (!doc.exists) {
-                throw new Error('File metadata not found');
-            }
-
-            return doc.data();
-        } catch (error) {
-            console.error(`Error retrieving file metadata: ${(error as Error).message}`);
-            throw error;
-        }
-    },
-
-    /**
-     * Deletes a file and its metadata from Firestore & Firebase Storage.
-     */
     async deleteFileAndDocument(documentId: string, folderPath = 'uploads/') {
         try {
             const documentSnapshot = await firestore().collection('fileUrls').doc(documentId).get();
@@ -137,8 +80,6 @@ const firebaseService = {
             await reference.delete();
 
             await firestore().collection('fileUrls').doc(documentId).delete();
-            await firestore().collection('encryptionKeys').doc(documentId).delete();
-            await firestore().collection('fileMetadata').doc(documentId).delete();
 
             console.log('File and document successfully deleted');
             return true;
@@ -147,14 +88,9 @@ const firebaseService = {
             throw error;
         }
     },
-
-    /**
-     * Retrieves all file links for a user.
-     */
     async getFileLinksFromFirestore(userId: string) {
-        if (!userId || userId === '') {
-            console.error('User ID cannot be null');
-            throw Error('Developer has down syndrome');
+        if (!userId || userId.trim() === '') {
+            throw new Error('Invalid user ID provided');
         }
         try {
             const querySnapshot = await firestore()
@@ -163,8 +99,7 @@ const firebaseService = {
                 .get();
 
             if (!querySnapshot.empty) {
-                const docs = querySnapshot.docs.map(doc => ({ ...doc.data(), fileId: doc.id }));
-                return docs;
+                return querySnapshot.docs.map(doc => ({ ...doc.data(), fileId: doc.id }));
             } else {
                 console.log('No files found');
                 return [];
@@ -174,6 +109,22 @@ const firebaseService = {
             throw error;
         }
     },
+    logout(navigation, dispatch) {
+        auth()
+            .signOut()
+            .then(() => {
+                dispatch(setUser(null)); // Clear user state
+
+                // Reset navigation stack to Welcome screen
+                navigation.dispatch(
+                    CommonActions.reset({
+                        index: 0,
+                        routes: [{ name: 'Welcome' }],
+                    })
+                );
+            })
+            .catch((error) => console.error('Logout failed:', error));
+    }
 };
 
 export default firebaseService;

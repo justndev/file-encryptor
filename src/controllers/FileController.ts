@@ -43,26 +43,17 @@ export class FileController {
 
   async uploadFile(userId: string, fileUri: string, fileName: string, fileSize: string): Promise<void> {
     try {
-      // 1️⃣ Generate encryption key & metadata (IV & salt)
-
-      // 2️⃣ Encrypt the file before upload
       const encryptedFilePath = `${RNFS.TemporaryDirectoryPath}/${fileName}.enc`;
-      const decryptedFilePath = `${RNFS.TemporaryDirectoryPath}/${fileName}`;
 
-      const {success, iv, salt} = await encryptionService.encryptFile(fileUri, encryptedFilePath, 'encryptionKey');
-      await encryptionService.decryptFile(encryptedFilePath, decryptedFilePath, 'encryptionKey', iv, salt);
+      const encryptionKey = await firebaseService.getEncryptionKey(userId);
 
-      // 3️⃣ Upload encrypted file to Firebase Storage
+      const {success, iv, salt} = await encryptionService.encryptFile(fileUri, encryptedFilePath, encryptionKey);
+
       const reference = storage().ref(`uploads/${fileName}.enc`);
       await reference.putFile(encryptedFilePath.replace('file://', ''));
       const url = await reference.getDownloadURL();
 
-      // 4️⃣ Store file metadata in Firestore
-      const fileId = await firebaseService.addFileUrlToFirestore(userId, url, fileName, fileSize);
-
-      // 5️⃣ Store encryption key & metadata in Firestore
-      await firebaseService.storeEncryptionKey(userId, fileId, encryptionKey);
-      await firebaseService.storeFileEncryptionMetadata(userId, fileId, iv, salt);
+      await firebaseService.addFileUrlToFirestore(userId, url, fileName, fileSize, iv, salt);
 
       console.log(`File ${fileName} uploaded & encrypted successfully.`);
     } catch (error) {
@@ -71,37 +62,36 @@ export class FileController {
     }
   }
    extractFileIdFromUrl(fileUrl: string): string {
-    const urlParts = fileUrl.split('?')[0];  // Remove query parameters
+    const urlParts = fileUrl.split('?')[0];
     const pathParts = urlParts.split('/');
     
-    // Assuming your file is in the format of 'upload/.../fileId' in the path
-    const fileId = pathParts[pathParts.length - 1];  // Get the last part as fileId
+    const fileId = pathParts[pathParts.length - 1];
     
     console.log(`Extracted fileId: ${fileId}`);
     return fileId;
   }
 
-  async downloadFile(fileId: string, fileUrl: string, fileName: string): Promise<string> {
+  async downloadFile(userId: string, fileUrl: string, fileName: string, iv: any, salt: any): Promise<string> {
     try {
-      // 1️⃣ Retrieve encryption key & metadata
-      console.log(`fileName ${fileId} fffff`)
-
-      const extractedFileId = this.extractFileIdFromUrl(fileId)
-
-      const encryptionKey = await firebaseService.getEncryptionKey(extractedFileId);
-      const { iv, salt } = await firebaseService.getFileEncryptionMetadata(extractedFileId);
+      const encryptionKey = await firebaseService.getEncryptionKey(userId);
 
       if (!encryptionKey || !iv || !salt) {
+        
         throw new Error('Missing encryption details.');
       }
 
-      // 2️⃣ Download encrypted file
       const encryptedFilePath = await storageService.downloadFile(fileUrl, `${fileName}.enc`);
 
-      // 3️⃣ Decrypt file
-      const decryptedFilePath = `${RNFS.TemporaryDirectoryPath}/${fileName}`;
+      const decryptedFilePath = `${RNFS.ExternalDirectoryPath}/${fileName}`;
       await encryptionService.decryptFile(encryptedFilePath, decryptedFilePath, encryptionKey, iv, salt);
 
+      try {
+        await RNFS.unlink(encryptedFilePath);
+        console.log(`Encrypted file deleted: ${encryptedFilePath}`);
+      } catch (deleteError) {
+        console.warn(`Failed to delete encrypted file: ${encryptedFilePath}`, deleteError);
+      }
+      
       console.log(`File ${fileName} downloaded & decrypted successfully.`);
       return decryptedFilePath;
     } catch (error) {

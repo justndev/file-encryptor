@@ -1,7 +1,7 @@
 import React from "react";
 import { TextInput } from "react-native-paper";
 import CustomIcon from "../CustomIcon";
-import { icons } from "../../utils/icons";
+import { icons } from "../../constants/icons";
 
 interface CustomInputFabricProps {
   type: "email" | "password" | "confirmPassword";

@@ -65,7 +65,8 @@ interface ValidationResult {
       }
   
       try {
-        await firebaseService.register(email, password);
+        const result = await firebaseService.register(email, password);
+        firebaseService.storeEncryptionKey(result.user.uid, encryptionService.generateEncryptionKey())
       } catch (error) {
         throw new Error((error as Error).message);
       }

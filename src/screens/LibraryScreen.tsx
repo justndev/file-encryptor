@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Alert } from 'react-native';
 import { Button } from 'react-native-paper';
+
 import { useDispatch, useSelector } from 'react-redux';
 import { removeSelectedFileToDownload, setUserFiles } from '../redux/appSlice';
 import { RootState } from '../redux/store';
+
 import FilesContainer from '../components/FilesContainer';
 import FileCard from '../components/FileCard';
 import CustomModal from '../components/CustomModal';
 import { useFocusEffect } from '@react-navigation/native';
 import { fileController } from '../controllers/FileController';
+import { encryptionService } from '../services/encryptionService';
 
 
 const LibraryScreen = () => {
@@ -21,6 +24,7 @@ const LibraryScreen = () => {
 
   useFocusEffect(
     React.useCallback(() => {
+      console.log(encryptionService.generateEncryptionKey())
       const fetchFiles = async () => {
         if (!user) return;
         
@@ -37,14 +41,17 @@ const LibraryScreen = () => {
   );
 
   const handleDownload = async () => {
-    if (!selectedFileToDownload) return;
+    if (!selectedFileToDownload || !user) return;
     
     setIsLoading(true);
+    console.log(selectedFileToDownload)
     try {
       const filePath = await fileController.downloadFile(
-        selectedFileToDownload.fileId,
+        user.uid,
         selectedFileToDownload.fileUrl,
-        selectedFileToDownload.fileName
+        selectedFileToDownload.fileName,
+        selectedFileToDownload.iv,
+        selectedFileToDownload.salt
       );
       Alert.alert('Success', `File downloaded to: ${filePath}`);
     } catch (error) {

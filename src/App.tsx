@@ -9,11 +9,12 @@ import LibraryScreen from './screens/LibraryScreen';
 import EncryptionScreen from './screens/EncryptionScreen';
 import { BottomNavigation, PaperProvider } from 'react-native-paper';
 import CustomIcon from './components/CustomIcon';
-import { icons } from './utils/icons';
+import { icons } from './constants/icons';
 import auth from '@react-native-firebase/auth';
 import { useDispatch, useSelector } from 'react-redux';
 import { setUser } from './redux/userSlice';
 import { RootState } from './redux/store';
+import ProfileScreen from './screens/ProfileScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -84,6 +85,16 @@ const TabNavigator = () => {
           tabBarLabel: 'Encrypt',
           tabBarIcon: ({ color, size }) => {
             return <CustomIcon source={icons.edit} size={size}/>;
+          },
+        }}
+      />
+        <Tab.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{
+          tabBarLabel: 'Profile',
+          tabBarIcon: ({ color, size }) => {
+            return <CustomIcon source={icons.profile} size={size}/>;
           },
         }}
       />
