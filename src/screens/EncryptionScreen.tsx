@@ -1,117 +1,97 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Alert } from 'react-native';
-import { ActivityIndicator, Button, Modal, Portal, Snackbar } from 'react-native-paper';
-
-import { requestGalleryWithPermission, requestCameraWithPermission } from '../services/PickerHelper';
-import { useSelector } from 'react-redux';
-import storageService from '../services/storageService';
-import firebaseService from '../services/firebaseService';
-import { RootState } from '../redux/store';
-
-import CustomIcon from '../components/CustomIcon';
+import { Button, Snackbar } from 'react-native-paper';
+import { DocumentPickerResponse } from 'react-native-document-picker';
+import CustomModal from '../components/CustomModal';
 import FileCard from '../components/FileCard';
-import { icons } from '../utils/icons';
+import { useSelector } from 'react-redux';
+import { RootState } from '../redux/store';
+import { fileController } from '../controllers/FileController';
 
 
 const EncryptionScreen = () => {
-  const [selectedFile, setSelectedFile] = useState<any>()
-  const [showActivity, setShowActivity] = useState(false)
-  const [showSnackbar, setShowSnackbar] = useState(false)
-  const user = useSelector((state: RootState) => state.user.user)
+  const [selectedFile, setSelectedFile] = useState<DocumentPickerResponse | null>(null);
+  const [showSnackbar, setShowSnackbar] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const user = useSelector((state: RootState) => state.userSlice.user);
 
-  // https://dev.to/ajmal_hasan/react-native-fileimage-picker-1o2j
-  const onPressItem = async (index: number) => {
+  const handleFilePick = async () => {
     try {
-      setTimeout(async () => {
-        if (index === 0) {
-          const file = await storageService.pickFile();
-          file && setSelectedFile(file)
-        Alert.alert(JSON.stringify(file));
-        }
-        if (index === 1) {
-          const response = await requestGalleryWithPermission();
-          response && setSelectedFile(response)
-          Alert.alert(JSON.stringify(response));
-        }
-        if (index === 2) {
-          const response = await requestCameraWithPermission();
-          Alert.alert(JSON.stringify(response));
-        }
-      }, 1000);
-
+      const result = await fileController.pickDocument();
+      if (result) {
+        setSelectedFile(result);
+      }
     } catch (error) {
-      const errMsh = `Error: + ${(error as Error).message}`
-      console.log(errMsh)
-      Alert.alert(errMsh)
-    };
+      Alert.alert('Error', (error as Error).message);
+    }
   };
 
-  async function handleEncryptAndUpload() {
+  const handleEncryptAndUpload = async () => {
+    if (!selectedFile || !user) return;
+    
+    setIsLoading(true);
     try {
-      const fileUrl = await storageService.uploadFile(selectedFile.uri, selectedFile.name);
-      firebaseService.addFileUrlToFirestore(user.user.uid, fileUrl, selectedFile.name, selectedFile.size)
-      setShowSnackbar(true)
+      await fileController.uploadFile(
+        user.uid,
+        selectedFile.uri,
+        selectedFile.name,
+        selectedFile.size.toString()
+      );
+      setShowSnackbar(true);
+      setSelectedFile(null);
     } catch (error) {
-
-      const errMsh = `Error: + ${(error as Error).message}`
-      console.log(errMsh)
-      Alert.alert(errMsh)
-    };
-  }; 
+      Alert.alert('Error', 'Failed to upload file');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
-      <Button mode="contained" onPress={() => onPressItem(0)}>
-        Select File
+      <Button 
+        mode="contained" 
+        onPress={handleFilePick}
+        disabled={isLoading}
+      >
+        Select Document
       </Button>
 
-      <Portal>
-        <Modal
-          visible={!!selectedFile}
-          onDismiss={() => setSelectedFile(null)}
-          contentContainerStyle={containerStyle}
-        >
-            <View style={styles.modalExitContainer}>
-              <CustomIcon source={icons.cross} size={25} onPress={() => setSelectedFile(null)} />
-            </View>
-
-            {selectedFile && <FileCard link={undefined} fileName={selectedFile.name} size={selectedFile.size} type={2} />}
+      <CustomModal 
+        visible={!!selectedFile} 
+        onDismiss={() => setSelectedFile(null)}
+      >
+        {selectedFile && (
+          <>
+            <FileCard 
+              link={undefined} 
+              fileName={selectedFile.name} 
+              size={selectedFile.size} 
+              type={2} 
+            />
             <View style={styles.modalButtonsContainer}>
-              {
-                showActivity ?
-                  <ActivityIndicator animating={true}/>
-                  :
-                  <Button mode="contained" onPress={() => handleEncryptAndUpload()}>
-                    Encrypt & Upload
-                  </Button>
-              }
+              <Button 
+                mode="contained" 
+                onPress={handleEncryptAndUpload}
+                loading={isLoading}
+                disabled={isLoading}
+              >
+                Encrypt & Upload
+              </Button>
             </View>
-        </Modal>
-      </Portal>
+          </>
+        )}
+      </CustomModal>
+
       <Snackbar
         duration={3000}
         visible={showSnackbar}
-        onDismiss={()=>setShowSnackbar(false)}
-        action={{
-          label: 'Dismiss',
-          onPress: () => {
-          },
-        }}>
-        Success!
+        onDismiss={() => setShowSnackbar(false)}
+        action={{ label: 'Dismiss', onPress: () => {} }}
+      >
+        File Uploaded Successfully!
       </Snackbar>
     </View>
   );
-};
-
-const containerStyle = {
-  backgroundColor: 'white',
-  padding: 20,
-  alignSelf: 'center',
-  width: '80%',
-  borderRadius: 10,
-  alignItems: 'center',
-  flexDirection: 'column',
-  gap: 5,
 };
 
 const styles = StyleSheet.create({
@@ -119,11 +99,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  modalExitContainer: {
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
   },
   modalButtonsContainer: {
     flexDirection: 'column',

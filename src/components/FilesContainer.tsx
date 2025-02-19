@@ -1,13 +1,14 @@
+import { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import FileCard from "./FileCard";
-import { useEffect, useState } from "react";
+
 
 const FilesContainer = ({ userFiles }) => {
   const [files, setFiles] = useState(userFiles || []);
 
   useEffect(() => {
     setFiles(userFiles);
-  }, [userFiles]); // Следит за изменениями в userFiles
+  }, [userFiles]);
 
   function renderFiles() {    
     return files.map((file, index) => (

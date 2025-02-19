@@ -1,117 +1,109 @@
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet, Alert } from 'react-native';
 import { Button } from 'react-native-paper';
-
-import FirebaseService from '../services/firebaseService';
 import { useDispatch, useSelector } from 'react-redux';
 import { removeSelectedFileToDownload, setUserFiles } from '../redux/appSlice';
 import { RootState } from '../redux/store';
-
 import FilesContainer from '../components/FilesContainer';
 import FileCard from '../components/FileCard';
 import CustomModal from '../components/CustomModal';
-import storageService from '../services/storageService';
-import firebaseService from '../services/firebaseService';
+import { useFocusEffect } from '@react-navigation/native';
+import { fileController } from '../controllers/FileController';
 
 
 const LibraryScreen = () => {
-  const { isEditMode, userFiles, selectedFileToDownload } = useSelector((state: RootState) => state.app);
+  const { userFiles, selectedFileToDownload } = useSelector(
+    (state: RootState) => state.appSlice
+  );
+  const user = useSelector((state: RootState) => state.userSlice.user);
+  const dispatch = useDispatch();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const { user } = useSelector((state: RootState) => state.user.user);
-  const dispatch = useDispatch()
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchFiles = async () => {
+        if (!user) return;
+        
+        try {
+          const files = await fileController.getUserFiles(user.uid);
+          dispatch(setUserFiles({ userFiles: files }));
+        } catch (error) {
+          Alert.alert('Error', (error as Error).message);
+        }
+      };
 
-  useEffect(() => {
-    async function fetchFiles() {
-      try {
-        const result = await FirebaseService.getFileLinksFromFirestore(user.uid)
-        console.log(result)
-       result && dispatch(setUserFiles({userFiles: result}))
-      } catch (error) {
-        const errorMsg = `Error fethcing file urls: ${(error as Error).message}`
+      fetchFiles();
+    }, [user])
+  );
 
-        console.log(errorMsg)
-        Alert.alert(errorMsg)
-      }
+  const handleDownload = async () => {
+    if (!selectedFileToDownload) return;
+    
+    setIsLoading(true);
+    try {
+      const filePath = await fileController.downloadFile(
+        selectedFileToDownload.fileId,
+        selectedFileToDownload.fileUrl,
+        selectedFileToDownload.fileName
+      );
+      Alert.alert('Success', `File downloaded to: ${filePath}`);
+    } catch (error) {
+      Alert.alert('Error', (error as Error).message);
+    } finally {
+      setIsLoading(false);
     }
-
-    fetchFiles()
-  }, []);
-
-  function removeSelectedFile() {
-    dispatch(removeSelectedFileToDownload())
   };
 
-
-  async function handleDownload() {
+  const handleDelete = async () => {
+    if (!selectedFileToDownload?.fileId) return;
+    
+    setIsLoading(true);
     try {
-      if (!selectedFileToDownload) return
-
-      const filePath = await storageService.downloadFile(selectedFileToDownload.fileUrl, selectedFileToDownload.fileName)
-      const msg = `File succefully downloaded: ${filePath}`
-      
-      console.log(msg)
-      Alert.alert(msg)
-
+      await fileController.deleteFile(selectedFileToDownload.fileId);
+      dispatch(removeSelectedFileToDownload());
+      Alert.alert('Success', 'File deleted successfully');
     } catch (error) {
-      const errorMsg = `Error downloading file: ${(error as Error).message}`
-
-      console.log(errorMsg)
-      Alert.alert(errorMsg)
-    };
+      Alert.alert('Error', (error as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
   };
-
-  async function handleDelete() {
-    if (!selectedFileToDownload) return
-    try {
-      await firebaseService.deleteFileAndDocument(selectedFileToDownload?.fileId);
-      Alert.alert('File deleted');
-    } catch (error) {
-      const errorMsg = `Error deleting file: ${(error as Error).message}`
-
-      console.log(errorMsg)
-      Alert.alert(errorMsg)
-    };
-  };
-
-  const Header = () => {
-    return (
-      <View style={styles.header}>
-        {isEditMode ? (
-          <>
-            <Button mode="contained" onPress={() => console.log('Pressed')}>
-              Cancel
-            </Button>
-            <Button mode="contained" onPress={() => console.log('Pressed')}>
-              Delete
-            </Button>
-          </>
-        ) : (
-          <Button mode="contained" onPress={() => console.log('Not implemented')}>
-            Edit
-          </Button>
-        )}
-      </View>
-    );
-  };  
 
   return (
     <View style={styles.container}>
-      <Header/>
       <FilesContainer userFiles={userFiles} />
-
-      <CustomModal visible={!!selectedFileToDownload} onDismiss={removeSelectedFile}>
-        {selectedFileToDownload && <FileCard fileUrl={selectedFileToDownload.fileUrl} fileName={selectedFileToDownload.fileName} fileSize={selectedFileToDownload.fileSize}/>}
-
-        <View style={styles.modalButtonsContainer}>
-          <Button mode="contained" onPress={handleDownload}>
-            Download
-          </Button>
-          <Button mode="contained" onPress={handleDelete}>
-            Delete
-          </Button>
-        </View>
+      <CustomModal 
+        visible={!!selectedFileToDownload} 
+        onDismiss={() => dispatch(removeSelectedFileToDownload())}
+      >
+        {selectedFileToDownload && (
+          <>
+            <FileCard 
+              fileUrl={selectedFileToDownload.fileUrl}
+              fileName={selectedFileToDownload.fileName}
+              fileSize={selectedFileToDownload.fileSize}
+            />
+            <View style={styles.modalButtonsContainer}>
+              <Button 
+                mode="contained" 
+                onPress={handleDownload}
+                loading={isLoading}
+                disabled={isLoading}
+              >
+                Download
+              </Button>
+              <Button 
+                mode="contained" 
+                onPress={handleDelete}
+                loading={isLoading}
+                disabled={isLoading}
+              >
+                Delete
+              </Button>
+            </View>
+          </>
+        )}
       </CustomModal>
-
     </View>
   );
 };
@@ -120,13 +112,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-  },
-  header: {
-    width: '100%',
-    padding: 5,
-    flexDirection: 'row',
-    gap: 5,
-    justifyContent: 'space-around',
   },
   modalButtonsContainer: {
     flexDirection: 'column',

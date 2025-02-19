@@ -6,14 +6,13 @@ import CustomIcon from "./CustomIcon";
 import { icons } from "../utils/icons";
 
 
-
 interface FileCardProps {
   fileName: string;
   fileUrl: string;
   fileSize: string;
   type?: number;
   fileId: string;
-}
+};
 
 const FileCard = ({ fileName, fileUrl, fileSize, type, fileId }: FileCardProps) => {
   const dispatch = useDispatch()

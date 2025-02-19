@@ -1,14 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
-import { Button, Surface, TextInput } from 'react-native-paper';
-import CustomIcon from '../components/CustomIcon';
-import { icons } from '../utils/icons';
-import auth from '@react-native-firebase/auth';
-import { useDispatch } from 'react-redux';
-import { setUser } from '../redux/userSlice';
+import ButtonFabric from '../components/fabrics/ButtonFabric';
+import CustomInputFabric from '../components/fabrics/TextInputFabric';
+import { authController } from '../controllers/AuthorizationController';
 
 
-const RegisterScreen = ({ navigation }) => {
+const RegisterScreen = ({ navigation } : {navigation: any}) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -17,151 +14,86 @@ const RegisterScreen = ({ navigation }) => {
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
 
-  const dispatch = useDispatch()
-
-  
-  const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email) {
-      setEmailError('Email is required');
-      return false;
-    }
-    if (!emailRegex.test(email)) {
-      setEmailError('Invalid email format');
-      return false;
-    }
-    setEmailError('');
-    return true;
+  const handleEmailChange = (text: string) => {
+    setEmail(text);
+    const { error } = authController.validateEmail(text);
+    setEmailError(error);
   };
 
-  const validatePassword = () => {
-    if (password !== confirmPassword) {
-      setPasswordError('Passwords do not match');
-      return false;
-    }
-    if (password.length < 6) {
-      setPasswordError('Password must be at least 6 characters');
-      return false;
-    }
-    setPasswordError('');
-    return true;
+  const handlePasswordChange = (text: string) => {
+    setPassword(text);
+    const { error } = authController.validatePassword(text, confirmPassword);
+    setPasswordError(error);
   };
 
-  const handleRegister = async() => {
-    if (validateEmail(email) && validatePassword()) {
-      try {
-        await auth().createUserWithEmailAndPassword(email, password);
-        Alert.alert('Registration Successful');
-        navigation.navigate('Login');
-      } catch (error) {
-        Alert.alert('Error', error.message);
-      }
+  const handleConfirmPasswordChange = (text: string) => {
+    setConfirmPassword(text);
+    const { error } = authController.validatePassword(password, text);
+    setPasswordError(error);
+  };
+
+  const handleRegister = async () => {
+    try {
+      await authController.register(email, password, confirmPassword);
+      Alert.alert('Registration Successful');
+      navigation.navigate('Login');
+    } catch (error) {
+      Alert.alert('Error', (error as Error).message);
     }
   };
 
-  const EmailIcon = () => (
-    <CustomIcon
-      source={icons.mail}
-      size={20}
-    />
-  );
-
-  const PasswordIcon = () => (
-    <CustomIcon
-      source={icons.lock}
-      size={20}
-    />
-  );
-
-  const EyeIcon = ({ showPassword }) => (
-    <CustomIcon
-      source={showPassword ? icons.eyeSlash : icons.eye}
-      size={20}
-    />
-  );
+  const isFormValid = () => {
+    return (
+      email && 
+      password && 
+      confirmPassword && 
+      !emailError && 
+      !passwordError
+    );
+  };
 
   return (
-      <View style={styles.container}>
-        <Text style={styles.title}>Create Account</Text>
-        
-        <TextInput
-          mode="outlined"
-          label="Email"
-          value={email}
-          onChangeText={text => {
-            setEmail(text);
-            if (emailError) validateEmail(text);
-          }}
-          error={!!emailError}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          style={styles.input}
-          left={<TextInput.Icon icon={() => <EmailIcon />} />}
-        />
+    <View style={styles.container}>
+      <Text style={styles.title}>Create Account</Text>
+      
+      <CustomInputFabric
+        type="email"
+        value={email}
+        onChangeText={handleEmailChange}
+        error={emailError}
+      />
 
-        <TextInput
-          mode="outlined"
-          label="Password"
-          value={password}
-          onChangeText={text => {
-            setPassword(text);
-            if (passwordError) validatePassword();
-          }}
-          secureTextEntry={!showPassword}
-          style={styles.input}
-          left={<TextInput.Icon icon={() => <PasswordIcon />} />}
-          right={
-            <TextInput.Icon
-              icon={() => <EyeIcon showPassword={showPassword} />}
-              onPress={() => setShowPassword(!showPassword)}
-            />
-          }
-        />
+      <CustomInputFabric
+        type="password"
+        value={password}
+        onChangeText={handlePasswordChange}
+        error={passwordError}
+        showPassword={showPassword}
+        toggleShowPassword={() => setShowPassword(!showPassword)}
+      />
 
-        <TextInput
-          mode="outlined"
-          label="Confirm Password"
-          value={confirmPassword}
-          onChangeText={text => {
-            setConfirmPassword(text);
-            if (passwordError) validatePassword();
-          }}
-          secureTextEntry={!showConfirmPassword}
-          style={styles.input}
-          error={!!passwordError}
-          left={<TextInput.Icon icon={() => <PasswordIcon />} />}
-          right={
-            <TextInput.Icon
-              icon={() => <EyeIcon showPassword={showConfirmPassword} />}
-              onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-            />
-          }
-        />
+      <CustomInputFabric
+        type="confirmPassword"
+        value={confirmPassword}
+        onChangeText={handleConfirmPasswordChange}
+        error={passwordError}
+        showPassword={showConfirmPassword}
+        toggleShowPassword={() => setShowConfirmPassword(!showConfirmPassword)}
+      />
 
-        {passwordError ? (
-          <Text style={styles.errorText}>{passwordError}</Text>
-        ) : null}
+      <ButtonFabric 
+        type={1} 
+        label="Register" 
+        onPress={handleRegister} 
+        isDisabled={!isFormValid()} 
+      />
 
-        <Button
-          mode="contained"
-          onPress={handleRegister}
-          style={styles.registerButton}
-          labelStyle={styles.buttonLabel}
-          disabled={!email || !password || !confirmPassword}
-        >
-          Register
-        </Button>
-
-        <View style={styles.footer}>
-          <Button
-            mode="text"
-            onPress={() => navigation.navigate('Login')}
-            style={styles.linkButton}
-          >
-            Already have an account? Sign in
-          </Button>
-        </View>
-      </View>
+      <ButtonFabric 
+        type={2} 
+        label="Already have an account? Sign in" 
+        onPress={() => navigation.navigate('Login')} 
+      />
+    </View>
   );
 };
 
@@ -189,22 +121,6 @@ const styles = StyleSheet.create({
     marginTop: -8,
     fontSize: 12,
     paddingLeft: 12,
-  },
-  registerButton: {
-    marginTop: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  buttonLabel: {
-    fontSize: 16,
-    paddingVertical: 4,
-  },
-  footer: {
-    marginTop: 24,
-    alignItems: 'center',
-  },
-  linkButton: {
-    marginTop: 8,
   }
 });
 

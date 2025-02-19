@@ -3,7 +3,7 @@ import { Image, View, StyleSheet, TouchableWithoutFeedback } from 'react-native'
 
 interface CustomIconProps {
   source: string;
-  size: number;
+  size?: number;
   onPress?: () => void
 };
 
@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   icon: {
-    tintColor: '#6b7280', // Default gray color, can be overridden via style prop
+    tintColor: '#6b7280',
   },
 });
 

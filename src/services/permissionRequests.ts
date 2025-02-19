@@ -1,54 +1,25 @@
-// permissionRequests.js
 import { PermissionsAndroid, Platform } from 'react-native';
 
 const permissionRequests = {
-  async checkFileReadPermission() {
-    if (Platform.OS === 'ios') {
-      return true; // iOS handles permissions through Info.plist
-    }
-  
-    try {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-        {
-          title: 'File Read Permission',
-          message: 'App needs access to read files from your device.',
-          buttonNeutral: 'Ask Me Later',
-          buttonNegative: 'Cancel',
-          buttonPositive: 'OK',
-        }
-      );
-  
-      return granted === PermissionsAndroid.RESULTS.GRANTED;
-    } catch (err) {
-      console.error('Error requesting read permission:', err);
-      return false;
-    }
-  },
-  
-  async checkFileWritePermission() {
-    if (Platform.OS === 'ios') {
-      return true; // iOS handles permissions through Info.plist
-    }
-  
-    try {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-        {
-          title: 'File Write Permission',
-          message: 'App needs access to save files to your device.',
-          buttonNeutral: 'Ask Me Later',
-          buttonNegative: 'Cancel',
-          buttonPositive: 'OK',
-        }
-      );
-  
-      return granted === PermissionsAndroid.RESULTS.GRANTED;
-    } catch (err) {
-      console.error('Error requesting write permission:', err);
-      return false;
-    }
+  async checkReadPermission() {
+    if (Platform.OS === 'android') {
+      const deviceVersion = parseInt(Platform.Version as string, 10);
+      let permission;
+
+      if (deviceVersion >= 13) {
+        permission = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES
+        );
+      } else {
+        permission = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE
+        );
+      }
+
+      return permission === PermissionsAndroid.RESULTS.GRANTED;
+    };
+    return true;
   }
-}
+};
 
 export default permissionRequests;

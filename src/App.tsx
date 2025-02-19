@@ -14,7 +14,6 @@ import auth from '@react-native-firebase/auth';
 import { useDispatch, useSelector } from 'react-redux';
 import { setUser } from './redux/userSlice';
 import { RootState } from './redux/store';
-import SettingsScreen from './screens/SettingsScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -88,27 +87,18 @@ const TabNavigator = () => {
           },
         }}
       />
-        <Tab.Screen
-        name="Settings"
-        component={SettingsScreen}
-        options={{
-          tabBarLabel: 'Settings',
-          tabBarIcon: ({ color, size }) => {
-            return <CustomIcon source={icons.hamburger} size={size}/>;
-          },
-        }}
-      />
     </Tab.Navigator>
   );
 };
 
 const App = () => {
     const [initializing, setInitializing] = useState(true);
-    const user = useSelector((state: RootState) => state.user.user)
+    const user = useSelector((state: RootState) => state.userSlice.user)
     const dispatch = useDispatch();
   
     function onAuthStateChanged(user: any) {
-      dispatch(setUser({user:{uid: user.uid, email: user.email}}));
+      user && dispatch(setUser({ uid: user.uid, email: user.email }));
+
       if (initializing) setInitializing(false);
     }
   

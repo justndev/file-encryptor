@@ -10,6 +10,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@react-native-async-storage/async-storage": "^1.24.0",
     "@react-native-firebase/app": "^21.7.1",
     "@react-native-firebase/auth": "^21.7.1",
     "@react-native-firebase/firestore": "^21.7.1",
@@ -18,12 +19,14 @@
     "@react-navigation/native": "^7.0.14",
     "@react-navigation/native-stack": "^7.2.0",
     "@reduxjs/toolkit": "^2.5.1",
+    "@types/crypto-js": "^4.2.2",
+    "buffer": "^6.0.3",
+    "crypto-js": "^4.2.0",
     "react": "18.3.1",
     "react-native": "0.77.0",
     "react-native-paper": "^5.13.1",
     "react-native-safe-area-context": "^5.1.0",
     "react-native-screens": "^4.5.0",
-    "react-native-vector-icons": "^10.2.0",
     "react-redux": "^9.2.0",
     "rn-fetch-blob": "^0.12.0"
   },
@@ -31,6 +34,7 @@
     "@babel/core": "^7.25.2",
     "@babel/preset-env": "^7.25.3",
     "@babel/runtime": "^7.25.0",
+    "@dhairyasharma/react-native-encryption": "^1.0.0",
     "@react-native-community/cli": "15.0.1",
     "@react-native-community/cli-platform-android": "15.0.1",
     "@react-native-community/cli-platform-ios": "15.0.1",
@@ -49,9 +53,11 @@
     "react-native-crypto-js": "^1.0.0",
     "react-native-device-info": "^14.0.4",
     "react-native-document-picker": "^9.3.1",
+    "react-native-file-viewer": "^2.1.5",
     "react-native-fs": "^2.20.0",
     "react-native-image-crop-picker": "^0.42.0",
     "react-native-permissions": "^5.2.5",
+    "react-native-randombytes": "^3.6.1",
     "react-test-renderer": "18.3.1",
     "typescript": "5.0.4"
   },

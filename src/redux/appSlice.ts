@@ -11,17 +11,15 @@ interface File {
 const initialState: {
   selectedFileToDownload: File | null;
   selectedFileToUpload: File | null;
-  isEditMode: boolean;
   userFiles: File[];
 } = {
   selectedFileToDownload: null,
     selectedFileToUpload: null,
-    isEditMode: false,
     userFiles: []
 };
 
 const appSlice = createSlice({
-  name: 'app',
+  name: 'appSlice',
   initialState,
   reducers: {
     setSelectedFileToDownload: (state, action) => {
@@ -36,14 +34,11 @@ const appSlice = createSlice({
     removeSelectedFileToUpload: (state) => {
       state.selectedFileToUpload = null;
     },
-    setEditMode: (state, action) => {
-      state.isEditMode = action.payload.state
-    },
     setUserFiles: (state, action) => {
       state.userFiles = action.payload.userFiles
     }
   },
 });
 
-export const { setSelectedFileToDownload, setSelectedFileToUpload, removeSelectedFileToDownload, removeSelectedFileToUpload, setEditMode, setUserFiles } = appSlice.actions;
+export const { setSelectedFileToDownload, setSelectedFileToUpload, removeSelectedFileToDownload, removeSelectedFileToUpload, setUserFiles } = appSlice.actions;
 export default appSlice.reducer;

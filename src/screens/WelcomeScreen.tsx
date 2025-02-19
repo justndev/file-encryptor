@@ -1,21 +1,16 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Button } from 'react-native-paper';
+import { View, Text, StyleSheet } from 'react-native';
+import CustomButton from '../components/fabrics/ButtonFabric';
+
 
 const WelcomeScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Welcome</Text>
-      <Button mode="contained" onPress={() => navigation.navigate('Login')} style={{width: '80%', maxWidth: 300, borderRadius: 8}}>
-        <Text style={{fontSize: 18}}>
-          Login
-        </Text>
-    </Button>
-    <Button mode="contained" onPress={() => navigation.navigate('Register')} style={{width: '80%', maxWidth: 300, borderRadius: 8}}>
-        <Text style={{fontSize: 18}}>
-        Register
-        </Text>
-    </Button>
+
+      <CustomButton onPress={() => navigation.navigate('Login')} label={'Login'} type={1}/>
+      <CustomButton onPress={() => navigation.navigate('Register')} label={'Register'} type={1}/>
+
     </View>
   );
 };
