@@ -8,8 +8,7 @@ const WelcomeScreen = ({ navigation }) => {
     <View style={styles.container}>
       <Text style={styles.title}>Welcome</Text>
 
-      <CustomButton onPress={() => navigation.navigate('Login')} label={'Login'} type={1}/>
-      <CustomButton onPress={() => navigation.navigate('Register')} label={'Register'} type={1}/>
+      <CustomButton onPress={() => navigation.navigate('MainApp')} label={'Continue'} type={1}/>
 
     </View>
   );

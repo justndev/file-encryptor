@@ -4,17 +4,18 @@ import { Image, View, StyleSheet, TouchableWithoutFeedback } from 'react-native'
 interface CustomIconProps {
   source: string;
   size?: number;
-  onPress?: () => void
+  onPress?: () => void;
+  color?: string;
 };
 
-const CustomIcon = ({ source, size = 24, onPress }: CustomIconProps) => {
+const CustomIcon = ({ source, size = 24, onPress, color}: CustomIconProps) => {
   return (
     <TouchableWithoutFeedback onPress={onPress}>
       <View style={[styles.iconContainer]}>
         <Image
-          source={source}
+          source={source} 
           style={[
-            styles.icon,
+            {tintColor: !!color ? color: '#6b7280'},
             {
               width: size,
               height: size,
@@ -33,9 +34,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  icon: {
-    tintColor: '#6b7280',
-  },
+
 });
 
 export default CustomIcon;

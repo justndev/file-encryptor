@@ -1,20 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { CommonActions, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import LoginScreen from './screens/LoginScreen';
-import RegisterScreen from './screens/RegisterScreen';
 import WelcomeScreen from './screens/WelcomeScreen';
-import LibraryScreen from './screens/LibraryScreen';
 import EncryptionScreen from './screens/EncryptionScreen';
 import { BottomNavigation, PaperProvider } from 'react-native-paper';
 import CustomIcon from './components/CustomIcon';
 import { icons } from './constants/icons';
-import auth from '@react-native-firebase/auth';
-import { useDispatch, useSelector } from 'react-redux';
-import { setUser } from './redux/userSlice';
-import { RootState } from './redux/store';
-import ProfileScreen from './screens/ProfileScreen';
+import DecryptScreen from './screens/DecryptScreen';
+import KeysScreen from './screens/KeysScreen';
+import TestScreen from './screens/TestScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -69,12 +64,12 @@ const TabNavigator = () => {
       )}
     >
       <Tab.Screen
-        name="My Files"
-        component={LibraryScreen}
+        name="Decrypt"
+        component={DecryptScreen}
         options={{
-          tabBarLabel: 'My Files',
+          tabBarLabel: 'Decrypt',
           tabBarIcon: ({ color, size }) => {
-            return <CustomIcon source={icons.home} size={size}/>;
+            return <CustomIcon source={icons.lockClosed} size={size}/>;
           },
         }}
       />
@@ -84,17 +79,27 @@ const TabNavigator = () => {
         options={{
           tabBarLabel: 'Encrypt',
           tabBarIcon: ({ color, size }) => {
-            return <CustomIcon source={icons.edit} size={size}/>;
+            return <CustomIcon source={icons.lockOpened} size={size}/>;
           },
         }}
       />
         <Tab.Screen
-        name="Profile"
-        component={ProfileScreen}
+        name="Keys"
+        component={KeysScreen}
         options={{
-          tabBarLabel: 'Profile',
+          tabBarLabel: 'Keys',
           tabBarIcon: ({ color, size }) => {
-            return <CustomIcon source={icons.profile} size={size}/>;
+            return <CustomIcon source={icons.key} size={size}/>;
+          },
+        }}
+      />
+      <Tab.Screen
+        name="Test"
+        component={TestScreen}
+        options={{
+          tabBarLabel: 'Test',
+          tabBarIcon: ({ color, size }) => {
+            return <CustomIcon source={icons.test} size={size}/>;
           },
         }}
       />
@@ -103,45 +108,13 @@ const TabNavigator = () => {
 };
 
 const App = () => {
-    const [initializing, setInitializing] = useState(true);
-    const user = useSelector((state: RootState) => state.userSlice.user)
-    const dispatch = useDispatch();
-  
-    function onAuthStateChanged(user: any) {
-      user && dispatch(setUser({ uid: user.uid, email: user.email }));
-
-      if (initializing) setInitializing(false);
-    }
-  
-    useEffect(() => {
-      const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
-      return subscriber;
-    }, []);
-  
-    if (initializing) return null;
-
-  function getInitialPage() {
-    if (user) return 'MainApp'
-    else return 'Welcome'
-  }
-
   return (
     <NavigationContainer>
       <PaperProvider>
-        <Stack.Navigator initialRouteName={getInitialPage()}>
+        <Stack.Navigator initialRouteName={'Welcome'}>
           <Stack.Screen
             name="Welcome"
             component={WelcomeScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="Login"
-            component={LoginScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="Register"
-            component={RegisterScreen}
             options={{ headerShown: false }}
           />
           <Stack.Screen

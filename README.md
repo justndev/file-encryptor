@@ -1,97 +1,122 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# File Encryptor - Secure File Storage Mobile App
 
-# Getting Started
+## Overview
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+This is a React Native mobile application that allows users to securely store and manage their files. The app provides end-to-end encryption for all uploaded files, ensuring that sensitive data remains protected at all times. Users can upload, download, and manage their encrypted files through an intuitive interface.
+It supposed to be connected to Firebase for authentication and file storage. This project was made specifically for mobile development course and have to be enhanced before real usage.
 
-## Step 1: Start Metro
+## Features
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+- **User Authentication**: Secure login and registration system
+- **End-to-End Encryption**: Files are encrypted before upload and decrypted after download
+- **File Management**: Upload, download, and delete files
+- **File Library**: View all your encrypted files in one place
+- **Cross-Platform**: Works on both iOS and Android devices
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+## Screenshots
 
-```sh
-# Using npm
-npm start
+![Screenshots 1](./screenshots1.jpg)
+![Screenshots 2](./screenshots1.jpg)
 
-# OR using Yarn
-yarn start
+## Demo
+
+View the complete DEMO in [Link](https://drive.google.com/file/d/1ZnDmOFlc1wLWwRAWP5lAL8o16_eLpF7N/view?usp=sharing).
+
+
+## Tech Stack
+
+- **React Native**: Cross-platform mobile application framework
+- **Firebase**: Authentication, Firestore database, and Cloud Storage
+- **React Navigation**: Navigation between screens
+- **React Native Paper**: UI components
+- **Redux**: State management
+- **React Native FS**: File system access
+- **React Native Document Picker**: File selection
+- **Custom Encryption Service**: File encryption/decryption using RNEncryptionModule
+
+## Project Structure
+
+```
+src/
+├── assets/            # Static assets (images, fonts)
+├── components/        # Reusable UI components
+│   └── fabrics/       # Component factories
+├── constants/         # App constants
+├── controllers/       # Business logic controllers
+├── redux/             # Redux store and slices
+├── screens/           # App screens
+├── services/          # Service layer (Firebase, encryption, etc.)
+└── App.tsx            # Main application component
 ```
 
-## Step 2: Build and run your app
+## Controllers
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+- **AuthController**: Handles user authentication (login, registration)
+- **FileController**: Manages file operations (upload, download, delete)
 
-### Android
+## Services
 
-```sh
-# Using npm
-npm run android
+- **encryptionService**: Handles file encryption and decryption
+- **firebaseService**: Interacts with Firebase (auth, storage, firestore)
+- **permissionRequests**: Handles permission requests
+- **storageService**: Manages local storage operations
 
-# OR using Yarn
-yarn android
-```
+## Screens
 
-### iOS
+- **WelcomeScreen**: Initial app screen
+- **LoginScreen**: User login
+- **RegisterScreen**: New user registration
+- **EncryptionScreen**: File selection and encryption
+- **LibraryScreen**: View and manage encrypted files
+- **ProfileScreen**: User profile management
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+## Installation
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+1. Clone the repository
+   ```
+   git clone https://github.com/justndev/file-encryptor.git
+   cd file-encryptor
+   ```
 
-```sh
-bundle install
-```
+2. Install dependencies
+   ```
+   npm install
+   ```
 
-Then, and every time you update your native dependencies, run:
+3. Set up Firebase
+   - Create a new Firebase project at [Firebase Console](https://console.firebase.google.com/)
+   - Enable Authentication, Firestore Database, and Storage
+   - Download the `google-services.json` (Android) and/or `GoogleService-Info.plist` (iOS) and place in the appropriate directory
+   - Update Firebase configuration in `firebaseConfig.js`
 
-```sh
-bundle exec pod install
-```
+4. Run the application
+   - For Android: `npx react-native run-android`
+   - For iOS: `npx react-native run-ios`
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+## Usage
 
-```sh
-# Using npm
-npm run ios
+1. **Registration**: Create a new account with email and password
+2. **Login**: Sign in with your credentials
+3. **Upload Files**:
+   - Navigate to Encryption Screen
+   - Select a document from your device
+   - Encrypt and upload the file
+4. **View Files**:
+   - Navigate to Library Screen
+   - View all your encrypted files
+5. **Download/Delete Files**:
+   - Tap on a file to view options
+   - Download to decrypt and save to your device
+   - Delete to remove the file from storage
 
-# OR using Yarn
-yarn ios
-```
+## Security
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+- All files are encrypted on the client side before upload
+- Encryption keys are securely stored in Firestore
+- Files remain encrypted in cloud storage
+- Decryption happens only on the client device after download
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
 
-## Step 3: Modify your app
+## License
 
-Now that you have successfully run the app, let's make changes!
-
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
-
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
-
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+This project is licensed under the MIT License - see the LICENSE file for details.

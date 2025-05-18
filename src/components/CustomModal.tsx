@@ -17,9 +17,7 @@ const CustomModal = ({ visible, onDismiss, children }: ModalProps) =>
             onDismiss={onDismiss}
             contentContainerStyle={containerStyle}
         >
-            <View style={styles.modalExitContainer}>
-                <CustomIcon source={icons.cross} size={25} onPress={onDismiss} />
-            </View>
+           
             {children}
         </Modal>
     </Portal>
